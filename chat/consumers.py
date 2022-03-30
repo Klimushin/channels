@@ -1,20 +1,21 @@
 import json
 
+from asgiref.sync import async_to_sync
 from channels.generic.websocket import AsyncWebsocketConsumer
-from models import ChatMessage, ChatUser
+from models import Message, User
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
     def fetch_messages(self, data):
-        messages = ChatMessage.last_10_massages()
+        messages = Message.last_10_massages()
         content = {
             'messages': self.messages_to_json(messages)
         }
 
     def new_mesage(self, data):
         user_message = data['from']
-        user = ChatUser.objects.filter(username=user_message)[0]
-        message = ChatMessage.objects.create(user=user, content=data['message'])
+        user = User.objects.filter(username=user_message)[0]
+        message = Message.objects.create(user=user, content=data['message'])
         content = {
             'command': 'new_message',
             'message':self.messages_to_json(message)
